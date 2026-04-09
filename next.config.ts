@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["@1password/sdk", "@1password/sdk-core"],
 };
 
 export default nextConfig;
