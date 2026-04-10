@@ -1,6 +1,6 @@
-import { validateAuth, unauthorized } from "@/lib/auth";
+import { validateAuth, validateVaultId, unauthorized, forbidden } from "@/lib/auth";
 import { getClient } from "@/lib/op-client";
-import { toItemUpdate, toConnectItem } from "@/lib/item-mapper";
+import { toItemUpdate, toConnectItem, validatePasskeyFields } from "@/lib/item-mapper";
 import type { ConnectItem } from "@/types/connect";
 
 export async function PUT(
@@ -10,7 +10,14 @@ export async function PUT(
   if (!validateAuth(request)) return unauthorized();
 
   const { vaultId, itemId } = await params;
+  if (!validateVaultId(vaultId)) return forbidden();
+
   const body: ConnectItem = await request.json();
+
+  const fieldError = validatePasskeyFields(body.fields);
+  if (fieldError) {
+    return Response.json({ error: fieldError }, { status: 400 });
+  }
 
   try {
     const client = await getClient();
@@ -22,7 +29,7 @@ export async function PUT(
     if (msg.toLowerCase().includes("not found")) {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
-    console.error("PUT item error", err);
+    console.error("PUT item error:", err instanceof Error ? err.message : "unknown");
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -34,6 +41,7 @@ export async function DELETE(
   if (!validateAuth(request)) return unauthorized();
 
   const { vaultId, itemId } = await params;
+  if (!validateVaultId(vaultId)) return forbidden();
 
   try {
     const client = await getClient();
@@ -44,7 +52,7 @@ export async function DELETE(
     if (msg.toLowerCase().includes("not found")) {
       return Response.json({ error: "Not found" }, { status: 404 });
     }
-    console.error("DELETE item error", err);
+    console.error("DELETE item error:", err instanceof Error ? err.message : "unknown");
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
