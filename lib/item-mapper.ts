@@ -7,6 +7,21 @@ import {
 } from "@1password/sdk";
 import type { ConnectItem, ConnectField } from "@/types/connect";
 
+const REQUIRED_PASSKEY_LABELS = ["credentialId", "rpId", "username"] as const;
+
+export function validatePasskeyFields(fields: ConnectField[] | undefined): string | null {
+  if (!Array.isArray(fields)) return "fields must be an array";
+  const labels = new Set(fields.map((f) => f.label));
+  for (const required of REQUIRED_PASSKEY_LABELS) {
+    if (!labels.has(required)) return `missing required field: ${required}`;
+  }
+  const credId = fields.find((f) => f.label === "credentialId");
+  if (credId && credId.type !== "CONCEALED") {
+    return "credentialId must be CONCEALED";
+  }
+  return null;
+}
+
 export function toItemCreateParams(connect: ConnectItem): ItemCreateParams {
   return {
     category: ItemCategory.Login,

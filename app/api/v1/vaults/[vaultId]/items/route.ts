@@ -1,6 +1,6 @@
-import { validateAuth, unauthorized } from "@/lib/auth";
+import { validateAuth, validateVaultId, unauthorized, forbidden } from "@/lib/auth";
 import { getClient } from "@/lib/op-client";
-import { toItemCreateParams, toConnectItem } from "@/lib/item-mapper";
+import { toItemCreateParams, toConnectItem, validatePasskeyFields } from "@/lib/item-mapper";
 import type { ConnectItem } from "@/types/connect";
 
 // OData-style filter: `title co "rpId::"`
@@ -16,6 +16,8 @@ export async function GET(
   if (!validateAuth(request)) return unauthorized();
 
   const { vaultId } = await params;
+  if (!validateVaultId(vaultId)) return forbidden();
+
   const { searchParams } = new URL(request.url);
   const filter = searchParams.get("filter") ?? "";
   const searchStr = parseContainsFilter(filter);
@@ -38,7 +40,7 @@ export async function GET(
     );
     return Response.json(items);
   } catch (err) {
-    console.error("GET items error", err);
+    console.error("GET items error:", err instanceof Error ? err.message : "unknown");
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -50,17 +52,24 @@ export async function POST(
   if (!validateAuth(request)) return unauthorized();
 
   const { vaultId } = await params;
+  if (!validateVaultId(vaultId)) return forbidden();
+
   const body: ConnectItem = await request.json();
 
   // Ensure the vault ID is consistent with the path
   body.vault = { id: vaultId };
+
+  const fieldError = validatePasskeyFields(body.fields);
+  if (fieldError) {
+    return Response.json({ error: fieldError }, { status: 400 });
+  }
 
   try {
     const client = await getClient();
     const created = await client.items.create(toItemCreateParams(body));
     return Response.json(toConnectItem(created), { status: 201 });
   } catch (err) {
-    console.error("POST item error", err);
+    console.error("POST item error:", err instanceof Error ? err.message : "unknown");
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
