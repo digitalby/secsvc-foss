@@ -9,7 +9,8 @@ import type { ConnectItem, ConnectField } from "@/types/connect";
 
 const REQUIRED_PASSKEY_LABELS = ["credentialId", "rpId", "username"] as const;
 
-export function validatePasskeyFields(fields: ConnectField[]): string | null {
+export function validatePasskeyFields(fields: ConnectField[] | undefined): string | null {
+  if (!Array.isArray(fields)) return "fields must be an array";
   const labels = new Set(fields.map((f) => f.label));
   for (const required of REQUIRED_PASSKEY_LABELS) {
     if (!labels.has(required)) return `missing required field: ${required}`;
