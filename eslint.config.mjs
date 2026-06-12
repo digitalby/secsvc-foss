@@ -7,6 +7,7 @@ export default [
   ...baseConfig,
   {
     files: ["**/*.{jsx,tsx}"],
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     plugins: { "jsx-nbsp": jsxNbsp },
     rules: {
       "jsx-nbsp/no-breaking-space-before-dash": "error",
