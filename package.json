@@ -20,7 +20,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
-    "eslint-plugin-jsx-nbsp": "github:digitalby-me/jsx-nbsp-lint#v1",
+    "eslint-plugin-jsx-nbsp": "https://github.com/digitalby-me/jsx-nbsp-lint/archive/refs/tags/v1.0.0.tar.gz",
     "typescript": "^5"
   }
 }
