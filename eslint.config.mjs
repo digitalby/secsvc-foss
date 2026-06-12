@@ -1,18 +1,16 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import base from "./eslint.config.base.mjs";
+import jsxNbsp from "eslint-plugin-jsx-nbsp";
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
-]);
+const baseConfig = Array.isArray(base) ? base : [base];
 
-export default eslintConfig;
+export default [
+  ...baseConfig,
+  {
+    files: ["**/*.{jsx,tsx}"],
+    plugins: { "jsx-nbsp": jsxNbsp },
+    rules: {
+      "jsx-nbsp/no-breaking-space-before-dash": "error",
+      "jsx-nbsp/no-text-to-text-jsx-space": "warn",
+    },
+  },
+];
